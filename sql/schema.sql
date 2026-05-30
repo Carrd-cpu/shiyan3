@@ -1,0 +1,44 @@
+CREATE DATABASE IF NOT EXISTS shiyan3 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+USE shiyan3;
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
+    role ENUM('admin','user') NOT NULL,
+    nickname VARCHAR(50),
+    phone VARCHAR(20),
+    enabled TINYINT NOT NULL DEFAULT 1,
+    failed_attempts INT NOT NULL DEFAULT 0,
+    lock_until DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS houses (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(100) NOT NULL,
+    community VARCHAR(100) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    region VARCHAR(50) NOT NULL,
+    layout VARCHAR(50) NOT NULL,
+    area DECIMAL(10,2) NOT NULL,
+    price DECIMAL(12,2) NOT NULL,
+    image_url VARCHAR(255),
+    description TEXT,
+    status ENUM('PENDING','APPROVED','REJECTED','OFFLINE') NOT NULL DEFAULT 'PENDING',
+    reject_reason VARCHAR(255),
+    created_by INT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_house_creator FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS favorites (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    house_id INT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_user_house(user_id, house_id),
+    CONSTRAINT fk_favorite_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_favorite_house FOREIGN KEY (house_id) REFERENCES houses(id) ON DELETE CASCADE
+);
