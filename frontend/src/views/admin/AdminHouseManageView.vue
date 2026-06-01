@@ -69,18 +69,25 @@ const total = ref(0)
 const visible = ref(false)
 const form = reactive({ id: null, title: '', community: '', address: '', region: '', layout: '', area: 0, price: 0, imageUrl: '', description: '' })
 
+const normalizeQueryParam = (value) => {
+  if (value == null || (typeof value === 'string' && value.trim() === '')) return undefined
+  return value
+}
+
 const loadData = async () => {
   try {
     const params = {
       page: query.page,
       size: query.size,
-      keyword: query.keyword || undefined,
-      status: query.status || undefined,
+      keyword: normalizeQueryParam(query.keyword),
+      status: normalizeQueryParam(query.status),
     }
     const data = await listAdminHouses(params)
     list.value = data?.list ?? []
     total.value = data?.total ?? 0
-  } catch {
+  } catch (error) {
+    // Optional: useful for debugging empty page states caused by request errors.
+    console.error('[AdminHouseManageView] loadData failed', error)
     list.value = []
     total.value = 0
   }

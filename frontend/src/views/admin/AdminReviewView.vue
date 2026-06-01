@@ -40,7 +40,9 @@ const loadData = async () => {
     const data = await listReviews(query)
     list.value = data?.list ?? []
     total.value = data?.total ?? 0
-  } catch {
+  } catch (error) {
+    // Optional: useful for debugging empty page states caused by request errors.
+    console.error('[AdminReviewView] loadData failed', error)
     list.value = []
     total.value = 0
   }
