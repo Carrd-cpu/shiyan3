@@ -21,7 +21,7 @@
       :current-page="query.page"
       :page-size="query.size"
       :total="total"
-      @current-change="(p)=>{query.page=p;loadData()}"
+      @current-change="handlePageChange"
     />
   </el-card>
 </template>
@@ -36,9 +36,21 @@ const list = ref([])
 const total = ref(0)
 
 const loadData = async () => {
-  const data = await listReviews(query)
-  list.value = data.list
-  total.value = data.total
+  try {
+    const data = await listReviews(query)
+    list.value = data?.list ?? []
+    total.value = data?.total ?? 0
+  } catch (error) {
+    // Optional: useful for debugging empty page states caused by request errors.
+    console.error('[AdminReviewView] loadData failed', error)
+    list.value = []
+    total.value = 0
+  }
+}
+
+const handlePageChange = (page) => {
+  query.page = page
+  loadData()
 }
 
 const approve = async (id) => {

@@ -10,7 +10,7 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="loadData">查询</el-button>
+        <el-button type="primary" @click="search">查询</el-button>
         <el-button type="success" @click="openDialog()">新增房源</el-button>
       </el-form-item>
     </el-form>
@@ -36,7 +36,7 @@
       :current-page="query.page"
       :page-size="query.size"
       :total="total"
-      @current-change="(p)=>{query.page=p;loadData()}"
+      @current-change="handlePageChange"
     />
   </el-card>
 
@@ -69,10 +69,38 @@ const total = ref(0)
 const visible = ref(false)
 const form = reactive({ id: null, title: '', community: '', address: '', region: '', layout: '', area: 0, price: 0, imageUrl: '', description: '' })
 
+const normalizeQueryParam = (value) => {
+  if (value == null || (typeof value === 'string' && value.trim() === '')) return undefined
+  return value
+}
+
 const loadData = async () => {
-  const data = await listAdminHouses(query)
-  list.value = data.list
-  total.value = data.total
+  try {
+    const params = {
+      page: query.page,
+      size: query.size,
+      keyword: normalizeQueryParam(query.keyword),
+      status: normalizeQueryParam(query.status),
+    }
+    const data = await listAdminHouses(params)
+    list.value = data?.list ?? []
+    total.value = data?.total ?? 0
+  } catch (error) {
+    // Optional: useful for debugging empty page states caused by request errors.
+    console.error('[AdminHouseManageView] loadData failed', error)
+    list.value = []
+    total.value = 0
+  }
+}
+
+const search = () => {
+  query.page = 1
+  loadData()
+}
+
+const handlePageChange = (page) => {
+  query.page = page
+  loadData()
 }
 
 const openDialog = (row) => {
